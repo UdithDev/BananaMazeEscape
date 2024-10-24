@@ -1,28 +1,33 @@
-import { Scene } from 'phaser';
+import { Scene } from "phaser";
 
-export class MainMenu extends Scene
-{
-    constructor ()
-    {
-        super('MainMenu');
-    }
+export class MainMenu extends Scene {
+  constructor() {
+    super("MainMenu");
+  }
 
-    create ()
-    {
-        this.add.image(512, 384, 'background');
+  preload() {
+    this.load.image("GameMainMenu", "assets/GameMainMenu.png");
+  }
 
-        this.add.image(512, 300, 'logo');
+  create() {
+    const background = this.add.image(960, 540, "GameMainMenu");
+    background.setDisplaySize(1366, 768);
 
-        this.add.text(512, 460, 'Main Menu', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5);
+    // Get the size of the background for the border
+    const bgWidth = background.displayWidth;
+    const bgHeight = background.displayHeight;
 
-        this.input.once('pointerdown', () => {
+    // Create a border using the Graphics object
+    const borderThickness = 10;
+    const borderColor = 0xFEEC37; //(hex value)
 
-            this.scene.start('Game');
+    const border = this.add.graphics();
+    border.lineStyle(borderThickness, borderColor, 1);
 
-        });
-    }
+    border.strokeRect(
+      background.x-bgWidth/2, background.y-bgHeight/2,
+      bgWidth, // Width of the border
+      bgHeight // Height of the border
+    );
+  }
 }
