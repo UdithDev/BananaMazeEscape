@@ -8,19 +8,30 @@ export class MainMenu extends Scene {
   preload() {
     this.load.image("GameMainMenu", "assets/GameMainMenu.png");
     this.load.image("BananaFigures", "assets/BananaFigures.png");
+    this.load.image("PlayButton", "assets/PlayButton.png");
+    this.load.image("SettingButton", "assets/SettingButton.png");
+    this.load.image("ExitButton", "assets/ExitButton.png");
   }
 
   create() {
     const background = this.add.image(960, 540, "GameMainMenu");
     background.setDisplaySize(1366, 768);
 
-    // Add the title image on top of the background
-    const title = this.add.image(630,275, "BananaFigures"); // Position it near the top
-    title.setOrigin(0.5, 0.5); // Center the image
+    // Add the title image
+    const gameTitle = this.add.image(575, 325, "BananaFigures");
+    gameTitle.setScale(0.7); // Adjust scale as needed
 
+    //Add play Button
+    const PlayButton = this.add.image(575, 450, "PlayButton").setInteractive();
+    PlayButton.setScale(0.7);
+    PlayButton.setOrigin(0.5, 0.5);
+    const settinButton = this.add.image(575, 575, "SettingButton");
+    const exitButton = this.add.image(575, 700, "ExitButton");
 
     // Optional: Scale title if necessary
-    title.setScale(1); // Adjust scale as needed
+
+    settinButton.setScale(0.7);
+    exitButton.setScale(0.7);
 
     // Get the size of the background for the border
     const bgWidth = background.displayWidth;
