@@ -22,16 +22,34 @@ export class MainMenu extends Scene {
     gameTitle.setScale(0.7); // Adjust scale as needed
 
     //Add play Button
-    const PlayButton = this.add.image(575, 450, "PlayButton").setInteractive();
+    const PlayButton = this.add
+      .image(575, 450, "PlayButton")
+      .setInteractive({ useHandCursor: true });
     PlayButton.setScale(0.7);
     PlayButton.setOrigin(0.5, 0.5);
-    const settinButton = this.add.image(575, 575, "SettingButton");
-    const exitButton = this.add.image(575, 700, "ExitButton");
+    PlayButton.on("pointerdown", () => {
+      this.startGame();
+    });
 
-    // Optional: Scale title if necessary
+    //Add Setting button
+    const settingButton = this.add
+      .image(575, 575, "SettingButton")
+      .setInteractive({ useHandCursor: true });
+    settingButton.setScale(0.7);
+    settingButton.setOrigin(0.5, 0.5);
+    settingButton.on("pointerdown", () => {
+      this.openSettings();
+    });
 
-    settinButton.setScale(0.7);
+    //Add exit button
+    const exitButton = this.add
+      .image(575, 700, "ExitButton")
+      .setInteractive({ useHandCursor: true });
     exitButton.setScale(0.7);
+    exitButton.setOrigin(0.5, 0.5);
+    exitButton.on("pointerdown", () => {
+      this.exitGame();
+    });
 
     // Get the size of the background for the border
     const bgWidth = background.displayWidth;
@@ -50,5 +68,22 @@ export class MainMenu extends Scene {
       bgWidth, // Width of the border
       bgHeight // Height of the border
     );
+  }
+
+  // Function to start the game
+  startGame() {
+    console.log("Play button clicked");
+    // Add code to start the game or go to the game scene
+    this.scene.start("InGameUI");
+  }
+
+  openSettings() {
+    console.log("Settings button clicked");
+    // Add code to open settings or go to the settings scene
+  }
+
+  exitGame() {
+    console.log("Exit button clicked");
+    // Add code to handle game exit
   }
 }
