@@ -2,6 +2,7 @@ import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
 import { InGameUI } from './scenes/InGameUI';
+import { Leaderboard } from './scenes/Leaderboard';
 import { MainMenu } from './scenes/MainMenu';
 import { Preloader } from './scenes/Preloader';
 
@@ -24,7 +25,8 @@ const config = {
         MainMenu,
         Game,
         GameOver,
-        InGameUI
+        InGameUI,
+        Leaderboard
     ]
 };
 

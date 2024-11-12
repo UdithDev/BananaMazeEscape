@@ -22,12 +22,12 @@ export class MainMenu extends Scene {
     gameTitle.setScale(0.7); // Adjust scale as needed
 
     //Add play Button
-    const PlayButton = this.add
+    const playButton = this.add
       .image(575, 450, "PlayButton")
       .setInteractive({ useHandCursor: true });
-    PlayButton.setScale(0.7);
-    PlayButton.setOrigin(0.5, 0.5);
-    PlayButton.on("pointerdown", () => {
+    playButton.setScale(0.7);
+    playButton.setOrigin(0.5, 0.5);
+    playButton.on("pointerdown", () => {
       this.startGame();
     });
 
