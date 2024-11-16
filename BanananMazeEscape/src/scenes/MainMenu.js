@@ -84,6 +84,6 @@ export class MainMenu extends Scene {
 
   exitGame() {
     console.log("Exit button clicked");
-    // Add code to handle game exit
+    this.scene.start("Login");
   }
 }
