@@ -6,52 +6,71 @@ export class MainMenu extends Scene {
   }
 
   preload() {
-    this.load.image("GameMainMenu", "assets/GameMainMenu.png");
+    this.load.image("GameMainMenu01", "assets/GameMainMenu01.png");
     this.load.image("BananaFigures", "assets/BananaFigures.png");
     this.load.image("PlayButton", "assets/PlayButton.png");
     this.load.image("SettingButton", "assets/SettingButton.png");
     this.load.image("ExitButton", "assets/ExitButton.png");
+    this.load.image("GameTitle01", "assets/GameTitle01.png");
+    this.load.audio("backgroundMusic", "assets/backgroundMusic.mp3");
+    this.load.image("play", "assets/play.png");
+    this.load.image("pause.", "assets/pause.png");
   }
 
   create() {
-    const background = this.add.image(960, 540, "GameMainMenu");
-    background.setDisplaySize(1366, 768);
+    // //background
+    const background = this.add.image(960, 550, "GameMainMenu01");
+    background.setDisplaySize(1920, 1050);
 
-    // Add the title image
-    const gameTitle = this.add.image(575, 325, "BananaFigures");
+    // // Add the title image
+    const gameTitle = this.add.image(750, 200, "GameTitle01");
     gameTitle.setScale(0.7); // Adjust scale as needed
+
+    // // Add bounce animation
+    this.tweens.add({
+      targets: gameTitle,
+      y: 220, // Move slightly downward
+      duration: 800, // Duration of the tween in milliseconds
+      ease: "Sine.easeInOut",
+      yoyo: true, // Make it return to the original position
+      repeat: -1, // Loop forever
+    });
 
     //Add play Button
     const playButton = this.add
-      .image(575, 450, "PlayButton")
+      .image(940, 750, "PlayButton")
       .setInteractive({ useHandCursor: true });
-    playButton.setScale(0.7);
+    playButton.setScale(1);
     playButton.setOrigin(0.5, 0.5);
     playButton.on("pointerdown", () => {
       this.startGame();
     });
 
-    //Add Setting button
-    const settingButton = this.add
-      .image(575, 575, "SettingButton")
-      .setInteractive({ useHandCursor: true });
-    settingButton.setScale(0.7);
-    settingButton.setOrigin(0.5, 0.5);
-    settingButton.on("pointerdown", () => {
-      this.openSettings();
+    playButton.on("pointerover", () => {
+      playButton.setScale(1.1); // Slightly increase the size of the button
     });
 
-    //Add exit button
-    const exitButton = this.add
-      .image(575, 700, "ExitButton")
-      .setInteractive({ useHandCursor: true });
-    exitButton.setScale(0.7);
-    exitButton.setOrigin(0.5, 0.5);
-    exitButton.on("pointerdown", () => {
-      this.exitGame();
+    playButton.on("pointerout", () => {
+      playButton.setScale(1); // Restore the original size
     });
 
-    // Get the size of the background for the border
+    // Play background music
+    this.backgroundMusic = this.sound.add("backgroundMusic", {
+      volume: 0.7, // Adjust volume (0.0 to 1.0)
+      loop: true, // Loop the music
+    });
+    //Add playButton Music
+    const playMusic = this.add
+      .image(150, 900, "play")
+      .setInteractive({ useHandCursor: true });
+    playMusic.setScale(0.2);
+    playMusic.on("pointerdown", () => {
+      if (!this.backgroundMusic.isPlaying) {
+        this.backgroundMusic.play();
+      }
+    });
+
+    // Get the size of the background for the border(That's the chatGPT code)
     const bgWidth = background.displayWidth;
     const bgHeight = background.displayHeight;
 
@@ -74,16 +93,7 @@ export class MainMenu extends Scene {
   startGame() {
     console.log("Play button clicked");
     // Add code to start the game or go to the game scene
+    this.backgroundMusic.stop();
     this.scene.start("InGameUI");
-  }
-
-  openSettings() {
-    console.log("Settings button clicked");
-    // Add code to open settings or go to the settings scene
-  }
-
-  exitGame() {
-    console.log("Exit button clicked");
-    this.scene.start("Login");
   }
 }
