@@ -3,6 +3,7 @@ import { Scene } from "phaser";
 export class MainMenu extends Scene {
   constructor() {
     super("MainMenu");
+    this.player;
   }
 
   preload() {
@@ -14,7 +15,8 @@ export class MainMenu extends Scene {
     this.load.image("GameTitle01", "assets/GameTitle01.png");
     this.load.audio("backgroundMusic", "assets/backgroundMusic.mp3");
     this.load.image("play", "assets/play.png");
-    this.load.image("pause.", "assets/pause.png");
+    this.load.image("pause", "assets/pause.png");
+    this.load.image("Banana", "assets/Banana.png");
   }
 
   create() {
@@ -59,16 +61,25 @@ export class MainMenu extends Scene {
       volume: 0.7, // Adjust volume (0.0 to 1.0)
       loop: true, // Loop the music
     });
-    //Add playButton Music
-    const playMusic = this.add
+
+    // Add Play/Pause button
+    this.isPlaying = false; // To track music state (playing or paused)
+
+    this.musicButton = this.add
       .image(150, 900, "play")
       .setInteractive({ useHandCursor: true });
-    playMusic.setScale(0.2);
-    playMusic.on("pointerdown", () => {
-      if (!this.backgroundMusic.isPlaying) {
-        this.backgroundMusic.play();
-      }
+    this.musicButton.setScale(0.2);
+
+    // Add toggle functionality to the button
+    this.musicButton.on("pointerdown", () => {
+      this.toggleMusic();
     });
+
+    this.player = this.physics.add
+      .image(1650, 0, "Banana", {
+        loop: true,
+      })
+      .setOrigin(0, 0).setScale(0.3);
 
     // Get the size of the background for the border(That's the chatGPT code)
     const bgWidth = background.displayWidth;
@@ -87,6 +98,17 @@ export class MainMenu extends Scene {
       bgWidth, // Width of the border
       bgHeight // Height of the border
     );
+  }
+
+  toggleMusic() {
+    if (this.isPlaying) {
+      this.backgroundMusic.stop();
+      this.musicButton.setTexture("play");
+    } else {
+      this.backgroundMusic.play();
+      this.musicButton.setTexture("pause");
+    }
+    this.isPlaying = !this.isPlaying;
   }
 
   // Function to start the game

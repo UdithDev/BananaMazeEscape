@@ -7,31 +7,37 @@ export class InGameUI extends Scene {
     super("InGameUI");
   }
 
+  init() {
+    if (this.textures.exists("questionImage")) {
+      this.textures.remove("questionImage");
+    }
+  }
+
   preload() {
     this.load.image("InGameUiBackground", "assets/InGameUiBackground.png");
     this.load.image("ExitButton", "assets/ExitButton.png");
     this.load.image("PlayButton", "assets/PlayButton.png");
     this.load.image("apiBackground", "assets/apiBackground.png");
     this.load.image("GameApi", "assets/GameApi.png");
-    this.load.image("Number01", "assets/Number01.png");
-    this.load.image("Number01", "assets/Number2.png");
-    this.load.image("Number01", "assets/Number3.png");
-    this.load.image("Number01", "assets/Number4.png");
-    this.load.image("Number01", "assets/Number5.png");
-    this.load.image("Number01", "assets/Number6.png");
-    this.load.image("Number01", "assets/Number7.png");
-    this.load.image("Number01", "assets/Number8.png");
-    this.load.image("Number01", "assets/Number9.png");
-    
+
+    // Numbers
+    this.load.image("Number1", "assets/Number01.png");
+    this.load.image("Number2", "assets/Number2.png");
+    this.load.image("Number3", "assets/Number3.png");
+    this.load.image("Number4", "assets/Number4.png");
+    this.load.image("Number5", "assets/Number5.png");
+    this.load.image("Number6", "assets/Number6.png");
+    this.load.image("Number7", "assets/Number7.png");
+    this.load.image("Number8", "assets/Number8.png");
+    this.load.image("Number9", "assets/Number9.png");
   }
 
   async create() {
-    this.scale.startFullscreen();
+    // this.scale.startFullscreen();
 
     // Set the background
-    const inGameUiBackground = this.add.image(0, 0, "InGameUiBackground");
-    inGameUiBackground.setOrigin(0); 
-    inGameUiBackground.setDisplaySize(this.scale.width, this.scale.height);
+    const inGameUiBackground = this.add.image(960, 540, "InGameUiBackground");
+    inGameUiBackground.setDisplaySize(1920, 1070);
 
     // Add Play button
     const playButton = this.add
@@ -53,54 +59,76 @@ export class InGameUI extends Scene {
       this.exitGame();
     });
 
-    // Fetch and display the question (image from the API)
-    await this.fetchImage();
-    if (this.gameInstance && this.gameInstance.question) {
-      const questionImageUrl = this.gameInstance.question;
-      this.load.once("complete", () => {
-        // Create the image and adjust its size
-        const questionImage = this.add.image(960, 500, "questionImage");
-        questionImage.setOrigin(0.5);
+    // Add loading text
+    const loadingText = this.add
+      .text(960, 500, "Loading question...", {
+        fontSize: "24px",
+        fill: "#ffffff",
+      })
+      .setOrigin(0.5);
 
-        // Get the actual dimensions of the loaded image
-        const texture = this.textures.get("questionImage");
-        const width = texture.getSourceImage().width;
-        const height = texture.getSourceImage().height;
+    try {
+      await this.fetchQuestionData();
 
-        console.log("Loaded image dimensions:", { width, height });
+      if (this.gameInstance?.question) {
+        // Convert the external URL to use our proxy
+        const originalUrl = new URL(this.gameInstance.question);
+        const proxyUrl = `/image-proxy${originalUrl.pathname}`;
 
-        // Dynamically scale the image to fit a reasonable size
-        const maxWidth = 800; 
-        const maxHeight = 600; 
-        const scaleX = maxWidth / width;
-        const scaleY = maxHeight / height;
-        const scale = Math.min(scaleX, scaleY); 
+        // Load the image through Phaser's loader
+        this.load.image("questionImage", proxyUrl);
 
-        questionImage.setScale(scale);
-      });
+        this.load.once("complete", () => {
+          loadingText.destroy();
 
-      this.load.image("questionImage", questionImageUrl);
-      this.load.start();
+          const questionImage = this.add.image(960, 500, "questionImage");
+          questionImage.setOrigin(0.5);
+
+          // Scale image to fit
+          const texture = this.textures.get("questionImage");
+          const width = texture.getSourceImage().width;
+          const height = texture.getSourceImage().height;
+
+          const maxWidth = 800;
+          const maxHeight = 600;
+          const scaleX = maxWidth / width;
+          const scaleY = maxHeight / height;
+          const scale = Math.min(scaleX, scaleY);
+
+          questionImage.setScale(scale);
+        });
+
+        this.load.once("loaderror", (fileObj) => {
+          console.error("Error loading image:", fileObj);
+          loadingText.setText("Error loading question image");
+        });
+
+        this.load.start();
+      } else {
+        loadingText.setText("No question available");
+      }
+    } catch (error) {
+      console.error("Error in create():", error);
+      loadingText.setText("Error loading question");
     }
   }
 
-  async fetchImage() {
+  async fetchQuestionData() {
     try {
-      const response = await fetch("https://marcconrad.com/uob/banana/api.php");
-      if (response.ok) {
-        this.gameInstance = await response.json();
-        console.log("Fetched question image URL:", this.gameInstance.question);
-      } else {
-        console.error("Failed to fetch the image:", response.statusText);
+      const response = await fetch("/api/question");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      this.gameInstance = await response.json();
+      console.log("Fetched question data:", this.gameInstance);
     } catch (error) {
-      console.error("Error fetching the image:", error);
+      console.error("Error fetching question:", error);
+      throw error;
     }
   }
 
   startGame() {
     console.log("Play button clicked");
-    // Add code to start the game or go to the game scene
     this.scene.start("Leaderboard");
   }
 

@@ -1,3 +1,4 @@
+import { Physics } from "phaser";
 import { Boot } from "./scenes/Boot";
 import { Game } from "./scenes/Game";
 import { GameOver } from "./scenes/GameOver";
@@ -10,6 +11,7 @@ import { SignIn } from "./scenes/SignIn";
 
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
+const speedDown = 300;
 const config = {
   type: Phaser.AUTO,
   width: 1920,
@@ -36,6 +38,14 @@ const config = {
   dom: {
     createContainer: true,
   },
+
+  physics: {
+    default: "arcade",
+    arcade: {
+      gravity: { y: speedDown },
+      debug: true,
+    },
+  },  
 };
 
 export default new Phaser.Game(config);
