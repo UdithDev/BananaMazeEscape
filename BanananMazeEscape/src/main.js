@@ -8,6 +8,7 @@ import { Login } from "./scenes/Login";
 import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { SignIn } from "./scenes/SignIn";
+import { GamePlay } from "./scenes/GamePlay";
 
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
@@ -33,6 +34,7 @@ const config = {
     Leaderboard,
     Login,
     SignIn,
+    GamePlay,
   ],
 
   dom: {
@@ -43,9 +45,9 @@ const config = {
     default: "arcade",
     arcade: {
       gravity: { y: speedDown },
-      debug: true,
+      debug: false,
     },
-  },  
+  },
 };
 
 export default new Phaser.Game(config);
