@@ -33,15 +33,16 @@ export class InGameUI extends Scene {
   }
 
   async create() {
-    // this.scale.startFullscreen();
+    this.scale.startFullscreen();
 
     // Set the background
-    const inGameUiBackground = this.add.image(960, 540, "InGameUiBackground");
-    inGameUiBackground.setDisplaySize(1920, 1070);
+    const inGameUiBackground = this.add.image(0, 0, "InGameUiBackground");
+    inGameUiBackground.setOrigin(0);
+    inGameUiBackground.setDisplaySize(this.scale.width, this.scale.height);
 
     // Add Play button
     const playButton = this.add
-      .image(1450, 850, "PlayButton")
+      .image(1650, 950, "PlayButton")
       .setInteractive({ useHandCursor: true });
     playButton.setScale(0.7);
     playButton.setOrigin(0.5, 0.5);
@@ -51,7 +52,7 @@ export class InGameUI extends Scene {
 
     // Add Exit button
     const exitButton = this.add
-      .image(575, 850, "ExitButton")
+      .image(300, 950, "ExitButton")
       .setInteractive({ useHandCursor: true });
     exitButton.setScale(0.7);
     exitButton.setOrigin(0.5, 0.5);
@@ -63,7 +64,7 @@ export class InGameUI extends Scene {
     const loadingText = this.add
       .text(960, 500, "Loading question...", {
         fontSize: "24px",
-        fill: "#ffffff",
+        fill: "#000000",
       })
       .setOrigin(0.5);
 
@@ -81,7 +82,7 @@ export class InGameUI extends Scene {
         this.load.once("complete", () => {
           loadingText.destroy();
 
-          const questionImage = this.add.image(960, 500, "questionImage");
+          const questionImage = this.add.image(960, 400, "questionImage");
           questionImage.setOrigin(0.5);
 
           // Scale image to fit
@@ -89,8 +90,8 @@ export class InGameUI extends Scene {
           const width = texture.getSourceImage().width;
           const height = texture.getSourceImage().height;
 
-          const maxWidth = 800;
-          const maxHeight = 600;
+          const maxWidth = 1000;
+          const maxHeight = 900;
           const scaleX = maxWidth / width;
           const scaleY = maxHeight / height;
           const scale = Math.min(scaleX, scaleY);
@@ -111,6 +112,37 @@ export class InGameUI extends Scene {
       console.error("Error in create():", error);
       loadingText.setText("Error loading question");
     }
+
+    //Enter the missing digit
+    this.add.dom(700, 800).createFromHTML(
+      `<p style=" color: #000000;
+        font-size:50px;
+        ">Enter the missing digit: </p>`
+    );
+    this.digitInput = this.add.dom(1000, 800).createFromHTML(
+      `<input type="text" name="" placeholder="" 
+         style="
+           padding: 20px; 
+           font-size: 20px; 
+           width: 50px; 
+           height:50px
+           border-radius: 15px; 
+           border: 2px solid #ccc; 
+           background-color: #FFFF00;
+           color: #000000;
+         ">`
+    );
+
+    const sendButton = this.add.dom(1200, 800).createFromHTML(
+      `<Button style=" cursor:pointer; padding:20px; font-size: 20px; width:100px; height:70px; background-color:#FFFF00;  border-radius: 15px; 
+           border: 2px solid #ccc; color:#000000">Send</Button>`
+    );
+
+    sendButton.node.addEventListener("click", () => {
+      console.log(this.digitInput.node.querySelector("input").value);
+    });
+
+    console.log("Solution", this.gameInstance.solution);
   }
 
   async fetchQuestionData() {

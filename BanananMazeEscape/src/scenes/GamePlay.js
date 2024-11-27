@@ -37,7 +37,6 @@ export class GamePlay extends Scene {
     platforms.create(150, 400, "ground").setScale(2);
 
     player = this.physics.add.sprite(100, 450, "dude");
-
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
 
