@@ -33,12 +33,11 @@ export class InGameUI extends Scene {
   }
 
   async create() {
-    this.scale.startFullscreen();
+    // this.scale.startFullscreen();
 
     // Set the background
-    const inGameUiBackground = this.add.image(0, 0, "InGameUiBackground");
-    inGameUiBackground.setOrigin(0);
-    inGameUiBackground.setDisplaySize(this.scale.width, this.scale.height);
+    const inGameUiBackground = this.add.image(960, 550, "InGameUiBackground");
+    inGameUiBackground.setDisplaySize(1920, 1050);
 
     // Add Play button
     const playButton = this.add
@@ -138,11 +137,19 @@ export class InGameUI extends Scene {
            border: 2px solid #ccc; color:#000000">Send</Button>`
     );
 
-    sendButton.node.addEventListener("click", () => {
-      console.log(this.digitInput.node.querySelector("input").value);
-    });
-
     console.log("Solution", this.gameInstance.solution);
+    sendButton.node.addEventListener("click", () => {
+      const inputValue = this.digitInput.node.querySelector("input").value;
+      if (inputValue == this.gameInstance.solution) {
+        console.log("Correct Solution!");
+        this.scene.restart();
+      } else {
+        console.log("Wrong");
+        // Show game over popup
+        this.createGameOverPopup();
+      }
+      this.digitInput.node.querySelector("input").value = "";
+    });
   }
 
   async fetchQuestionData() {
@@ -167,5 +174,88 @@ export class InGameUI extends Scene {
   exitGame() {
     console.log("Exit button clicked");
     this.scene.start("MainMenu");
+  }
+
+  // Thats code given by Claude AI
+  createGameOverPopup() {
+    //Create a full screen overlay
+    const overlay = this.add.rectangle(
+      0,
+      0,
+      this.scale.width,
+      this.scale.height,
+      0x000000,
+      0.5
+    );
+    overlay.setOrigin(0);
+    overlay.setDepth(1000);
+
+    //create popup container
+    const popupWidth = 600;
+    const popupHeight = 400;
+
+    const popup = this.add.container(
+      this.scale.width / 2,
+      this.scale.height / 2
+    );
+    popup.setDepth(1001);
+
+    // Popup background
+    const popupBg = this.add.rectangle(0, 0, popupWidth, popupHeight, 0xffffff);
+
+    popupBg.setStrokeStyle(4, 0xff0000);
+    popupBg.setOrigin(0.5);
+
+    // Game Over Text
+    const gameOverText = this.add.text(0, -100, "GAME OVER", {
+      fontSize: "64px",
+      color: "#FF0000",
+      fontStyle: "bold",
+      fontFamily: "Arial",
+    });
+    gameOverText.setOrigin(0.5);
+
+    // Try Again Button
+    const tryAgainButton = this.add.rectangle(0, 50, 250, 80, 0xff0000);
+    tryAgainButton.setInteractive({ useHandCursor: true });
+
+    const tryAgainText = this.add.text(0, 50, "Try Again", {
+      fontSize: "32px",
+      color: "#FFFFFF",
+      fontFamily: "Arial",
+    });
+    tryAgainText.setOrigin(0.5);
+
+    // Add elements to popup container
+    popup.add([popupBg, gameOverText, tryAgainButton, tryAgainText]);
+
+    //Animate popup entrance
+    this.tweens.add({
+      targets: popup,
+      scaleX: 0,
+      scaleY: 0,
+      duration: 0,
+
+      onCompolete: () => {
+        this.tweens.add({
+          targets: popup,
+          scaleX: 1,
+          scaleY: 1,
+          duration: 400,
+          ease: "Back.easeOut",
+        });
+      },
+    });
+
+    // Add click event to try again button
+    tryAgainButton.on("pointerdown", () => {
+      // Destroy popup and overlay
+      popup.destroy();
+      overlay.destroy();
+
+      // Restart the scene
+      this.scene.restart();
+    });
+    return popup;
   }
 }
