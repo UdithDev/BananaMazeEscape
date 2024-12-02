@@ -3,6 +3,7 @@ import { Scene } from "phaser";
 export class SignIn extends Scene {
   constructor() {
     super("SignIn");
+    this.baseUrl = "http://localhost:3000";
   }
 
   preload() {
@@ -13,6 +14,33 @@ export class SignIn extends Scene {
     this.load.image("password", "assets/password.png");
     this.load.image("SignIn", "assets/SignIn.png");
     this.load.image("ExitButton", "assets/ExitButton.png");
+  }
+
+  async handleSignIn() {
+    const username = this.usernameInput.getChildByName("username").value;
+    const password = this.passwordInput.getChildByName("password").value;
+
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed");
+      }
+
+      // Registration successful, proceed to login screen
+      this.scene.start("Login");
+    } catch (error) {
+      console.error("Registration error:", error);
+      // Add user-facing error handling here
+    }
   }
 
   create() {
@@ -26,14 +54,15 @@ export class SignIn extends Scene {
       .image(960, 680, "SignIn")
       .setInteractive({ useHandCursor: true });
     signIn.setScale(0.7);
+    signIn.on("pointerdown", () => this.handleSignIn());
 
     const exitButton = this.add
       .image(1460, 765, "ExitButton")
       .setInteractive({ useHandCursor: true });
     exitButton.setScale(0.7);
     exitButton.on("pointerdown", () => {
-        this.scene.start("Login");
-      });
+      this.scene.start("Login");
+    });
 
     //Username
     this.add.image(575, 465, "Username").setScale(0.7);

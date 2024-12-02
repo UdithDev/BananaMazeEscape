@@ -79,7 +79,8 @@ export class MainMenu extends Scene {
       .image(1650, 0, "Banana", {
         loop: true,
       })
-      .setOrigin(0, 0).setScale(0.3);
+      .setOrigin(0, 0)
+      .setScale(0.3);
 
     // Get the size of the background for the border(That's the chatGPT code)
     const bgWidth = background.displayWidth;
@@ -116,6 +117,14 @@ export class MainMenu extends Scene {
     console.log("Play button clicked");
     // Add code to start the game or go to the game scene
     this.backgroundMusic.stop();
-    this.scene.start("InGameUI");
+
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      this.scene.start("GamePlay");
+      return;
+    }
+
+    this.scene.start("Login");
   }
 }

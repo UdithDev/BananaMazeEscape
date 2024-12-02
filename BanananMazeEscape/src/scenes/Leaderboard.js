@@ -3,84 +3,116 @@ import { Scene } from "phaser";
 export class Leaderboard extends Scene {
   constructor() {
     super("Leaderboard");
+    this.baseUrl = "http://localhost:3000";
   }
 
   preload() {
     this.load.image("Leaderboard", "assets/Leaderboard.png");
     this.load.image("LeaderboardTitle", "assets/LeaderboardTitle.png");
     this.load.image("PlayerScoreBg", "assets/PlayerScoreBg.png");
+    this.load.image("RetryButton", "assets/RetryButton.png");
   }
 
-  create() {
-    // Set background
+  async create() {
     const leaderboardBg = this.add.image(960, 540, "Leaderboard");
-    leaderboardBg.setDisplaySize(1366, 768);
+    leaderboardBg.setDisplaySize(1920, 1080);
 
-    // Leaderboard title
-    this.add.image(960, 250, "LeaderboardTitle").setScale(0.6);
+    const title = this.add.image(960, 200, "LeaderboardTitle").setScale(0.8);
 
-    // Player Scores
-
-    this.players = [
-      { name: "Player 01", score: 10 },
-      { name: "Player 02", score: 8 },
-      { name: "Player 03", score: 5 },
-      { name: "Player 04", score: 12 },
-      { name: "Player 05", score: 10 },
-      { name: "Player 06", score: 8 },
-      { name: "Player 07", score: 5 },
-      { name: "Player 08", score: 12 },
-      { name: "Player 01", score: 10 },
-      { name: "Player 02", score: 8 },
-      { name: "Player 03", score: 5 },
-      { name: "Player 04", score: 12 },
-      { name: "Player 05", score: 10 },
-      { name: "Player 06", score: 8 },
-      { name: "Player 07", score: 5 },
-      { name: "Player 08", score: 12 },
-    ];
-
-    // Create a container to hold leaderboard entries
-    this.leaderboardContainer = this.add.container(960, 250); //center of screen
-    this.leaderboardContainer.setSize(600, 300); // adjust size as needed
-
-    // Add each player entry as a text object within the container
-    this.playerTexts = [];
-    for (let i = 0; i < this.players.length; i++) {
-      const player = this.players[i];
-      const text = this.add.text(0, i * 60, `${player.name}: ${player.score}`, {
-        font: "24px Arial",
-        color: "#ffffff",
-      });
-      this.leaderboardContainer.add(text);
-      this.playerTexts.push(text);
+    try {
+      const response = await fetch(`${this.baseUrl}/leaderboard`);
+      if (!response.ok) throw new Error("Failed to fetch leaderboard");
+      this.players = (await response.json())
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      this.players = [];
     }
 
-    // Set a mask to create a scrolling effect
-    const maskShape = this.make.graphics();
-    maskShape.fillStyle(0xfeec37);
-    maskShape.fillRect(960, 490, 400, 300); // Position and size for the mask area
-    const mask = maskShape.createGeometryMask();
-    this.leaderboardContainer.setMask(mask);
+    const contentWidth = 800;
+    const contentHeight = 500;
+    const contentX = 960 - contentWidth / 2;
+    const contentY = 300;
 
-    // Set up input handling for scrolling
-    this.scrollAmount = 0; // Initial scroll position
-    this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
-      this.scrollLeaderboard(deltaY);
+    // Create background panel
+    const panel = this.add.graphics();
+    panel.fillStyle(0x000000, 0.7);
+    panel.fillRoundedRect(contentX, contentY, contentWidth, contentHeight, 20);
+
+    // Create scrollable container for entries
+    const scrollContent = this.add.container(contentX, contentY);
+
+    // Headers
+    const headers = ["RANK", "PLAYER", "SCORE"];
+    const headerX = [100, 300, 600];
+
+    headers.forEach((header, i) => {
+      this.add
+        .text(contentX + headerX[i], contentY + 30, header, {
+          fontSize: "28px",
+          fontFamily: "Arial",
+          color: "#FFD700",
+        })
+        .setOrigin(0.5);
     });
 
-    scrollLeaderboard(deltaY);
-    {
-      // Calculate the new scroll position
-      const maxScroll = this.players.length * 40 - 300; // Adjust based on container height
-      this.scrollAmount = Phaser.Math.Clamp(
-        this.scrollAmount + deltaY,
-        -maxScroll,
-        0
+    // Player entries
+    this.players.forEach((player, index) => {
+      const yPos = contentY + 100 + index * 60;
+
+      // Entry background
+      const entryBg = this.add.graphics();
+      entryBg.fillStyle(index < 3 ? 0xffd700 : 0x4a4a4a, 0.2);
+      entryBg.fillRoundedRect(
+        contentX + 20,
+        yPos - 20,
+        contentWidth - 40,
+        40,
+        10
       );
 
-      // Update the container's position to scroll
-      this.leaderboardContainer.y = 540 + this.scrollAmount;
-    }
+      // Entry data
+      this.add
+        .text(contentX + headerX[0], yPos, `#${index + 1}`, {
+          fontSize: "24px",
+          color: index < 3 ? "#FFD700" : "#FFFFFF",
+        })
+        .setOrigin(0.5);
+
+      this.add
+        .text(contentX + headerX[1], yPos, player.username, {
+          fontSize: "24px",
+          color: "#FFFFFF",
+        })
+        .setOrigin(0.5);
+
+      this.add
+        .text(contentX + headerX[2], yPos, player.score.toString(), {
+          fontSize: "24px",
+          color: "#FFD700",
+        })
+        .setOrigin(0.5);
+
+      scrollContent.add(entryBg);
+    });
+
+    // Retry button
+    const retryButton = this.add
+      .image(960, 820, "RetryButton")
+      .setScale(0.8)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.scene.start("GamePlay"))
+      .on("pointerover", () => retryButton.setScale(0.85))
+      .on("pointerout", () => retryButton.setScale(0.8));
+
+    // Simple mouse wheel scrolling
+    this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
+      if (deltaY > 0 && scrollContent.y > contentY - this.players.length * 60) {
+        scrollContent.y -= 20;
+      } else if (deltaY < 0 && scrollContent.y < contentY) {
+        scrollContent.y += 20;
+      }
+    });
   }
 }

@@ -3,6 +3,7 @@ import { Scene } from "phaser";
 export class Login extends Scene {
   constructor() {
     super("Login");
+    this.baseUrl = "http://localhost:3000";
   }
 
   preload() {
@@ -25,16 +26,12 @@ export class Login extends Scene {
   }
 
   create() {
-    //Background
-    // this.scale.startFullscreen();
     const loginBg = this.add.image(0, 0, "LoginBack");
-    loginBg.setOrigin(0); 
+    loginBg.setOrigin(0);
     loginBg.setDisplaySize(this.scale.width, this.scale.height);
 
-    // Title
     this.add.image(960, 250, "GameTitle").setScale(0.7);
 
-    //Username
     this.add.image(675, 465, "UsernameIcon").setScale(0.8);
     this.usernameInput = this.add.dom(960, 465).createFromHTML(
       `<input type="text" name="username" placeholder="Username" 
@@ -49,7 +46,6 @@ export class Login extends Scene {
          ">`
     );
 
-    //Password
     this.add.image(675, 580, "PasswordIcon").setScale(0.8);
     this.passwordInput = this.add.dom(960, 580)
       .createFromHTML(`<input type="password" name="password" placeholder="Password" 
@@ -63,21 +59,18 @@ export class Login extends Scene {
           color: #000000;
         ">`);
 
-    // Login Button
     const loginButton = this.add
       .image(1085, 720, "Login")
       .setScale(0.7)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.handleLogin());
 
-    //Sign In Button
     const signInButton = this.add
       .image(700, 720, "SignIn")
       .setScale(0.7)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.handleSignIn());
 
-    // Feedback Text
     this.feedbackText = this.add
       .text(785, 720, "", { fontSize: "20px", color: "#FF0000" })
       .setOrigin(0.5);
@@ -87,41 +80,35 @@ export class Login extends Scene {
     const username = this.usernameInput.getChildByName("username").value;
     const password = this.passwordInput.getChildByName("password").value;
 
-    //remove this
-    // this.scene.start("MainMenu");
-
-    if (!username) {
-      alert("Username is empty!");
+    if (!username || !password) {
+      this.feedbackText.setText("Please enter both username and password");
       return;
     }
 
-    if (!password) {
-      alert("Password is empty!");
-      return;
-    }
-
-    // Call server-side API
     try {
-      const response = await fetch("http://localhost:3000/login", {
+      const response = await fetch(`${this.baseUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
+
       const data = await response.json();
 
-      if (data.token) {
-        localStorage.setItem("jwtToken", data.token);
-        this.scene.start("MainMenu");
-      } else {
-        this.feedbackText.setText("Login failed. Please try again.");
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed");
       }
+
+      localStorage.setItem("token", data.token);
+      this.scene.start("MainMenu");
     } catch (error) {
-      console.error("Error during login:", error);
-      this.feedbackText.setText("An error occurred.");
+      console.error("Login error:", error);
+      this.feedbackText.setText(
+        error.message || "Login failed. Please try again."
+      );
     }
   }
 
-  async handleSignIn() {
+  handleSignIn() {
     this.scene.start("SignIn");
   }
 }

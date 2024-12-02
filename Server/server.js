@@ -1,24 +1,40 @@
+// src/app.js
+require("dotenv").config();
 const express = require("express");
-const dotenv = require("dotenv");
-const bodyParser = require("body-parser");
 const cors = require("cors");
-// const connectDB = require("./config/db");
-
-// routes
-const userRoutes = require("./controllers/userControllers");
-
-dotenv.config();
+const morganMiddleware = require("./config/morgan");
+const connectDB = require("./config/database");
+const authRoutes = require("./routes/auth.routes");
+const leaderboardRoutes = require("./routes/leaderboard.routes");
 
 const app = express();
-app.use(bodyParser.json());
+
+// Middleware
+app.use(express.json());
 app.use(cors());
-app.use(express.static("public"));
 
-app.use(userRoutes);
+if (process.env.NODE_ENV === "development") {
+  app.use(morganMiddleware.dev);
+} else {
+  app.use(morganMiddleware.prod);
+}
 
-// connectDB()
-//   .then((onFul) => console.log(onFul))
-//   .catch((onRej) => console.log(onRej));
+// Routes
+app.use("/auth", authRoutes);
+app.use("/leaderboard", leaderboardRoutes);
 
-let PORT = process.env.PORT;
-app.listen(PORT, console.log(`Server started on ${PORT}`));
+const startServer = async () => {
+  try {
+    await connectDB(); // Wait for MongoDB connection
+
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
